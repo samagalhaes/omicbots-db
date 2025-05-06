@@ -1,0 +1,35 @@
+<?php
+ 
+echo "OLA FBN";
+ 
+putenv("HOME=/home/criisadmin");
+ 
+$currentUser = get_current_user();
+echo "<p>Current User: " . $currentUser . "</p>";
+ 
+$output = shell_exec("whoami");
+echo "<pre>$output</pre>";
+ 
+$output = shell_exec("git config --global --add safe.directory /var/www/html/omicbots/omicbots-db 2>&1");
+echo "<pre>$output</pre>";
+ 
+ 
+// Executar o comando 'git pull'
+$output = shell_exec('git pull 2>&1');
+ 
+// Exibir a saída do comando
+echo "<pre>$output</pre>";
+echo "done";
+ 
+
+// Finalizar o conteúdo PHP
+$fileContent .= "\n?>";
+ 
+// Escrever o conteúdo em um novo arquivo PHP
+if (file_put_contents($newFileName, $fileContent)) {
+    echo "O arquivo $newFileName foi gerado com sucesso!";
+//    echo "<br><a href='$newFileName'>Clique aqui para visualizar o arquivo gerado</a>";
+} else {
+    echo "Erro ao criar o arquivo $newFileName.";
+}
+?>
