@@ -1,5 +1,5 @@
 {
-    "name": "omicstat",
+    "name": "agridata/download-system",
     "description": "Sistema de Download de Dados Agricolas inspirado no FAOSTAT",
     "type": "project",
     "require": {
