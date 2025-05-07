@@ -22,6 +22,9 @@ echo "<pre>$output</pre>";
 echo "done";
  
 $output = shell_exec('tail /var/log/apache2/error.log 2>&1');
+// Exibir a saída do comando
+echo "<pre>$output</pre>";
+echo "done";
 
 // Finalizar o conteúdo PHP
 $fileContent .= "\n?>";
