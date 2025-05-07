@@ -3,9 +3,9 @@
 
 // Configurações do Banco de Dados
 define('DB_SERVER', 'localhost');
-define('DB_USERNAME', 'username');
-define('DB_PASSWORD', 'password');
-define('DB_NAME', 'agricultural_data');
+define('DB_USERNAME', 'omicbotsuser');
+define('DB_PASSWORD', 'omicbots#');
+define('DB_NAME', 'omicbotsdb');
 
 // Estabelecer conexão com o banco de dados
 $conn = mysqli_connect(DB_SERVER, DB_USERNAME, DB_PASSWORD, DB_NAME);
