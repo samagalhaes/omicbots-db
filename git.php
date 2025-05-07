@@ -21,6 +21,7 @@ $output = shell_exec('git pull 2>&1');
 echo "<pre>$output</pre>";
 echo "done";
  
+$output = shell_exec('tail /var/log/apache2/error.log 2>&1');
 
 // Finalizar o conteúdo PHP
 $fileContent .= "\n?>";
