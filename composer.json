@@ -1,6 +1,6 @@
 {
     "name": "OMICSTAT",
-    "description": "Sistema de Download de Dados Agrícolas inspirado no FAOSTAT",
+    "description": "Sistema de Download de Dados Agricolas inspirado no FAOSTAT",
     "type": "project",
     "require": {
         "smarty/smarty": "^4.3",
@@ -8,7 +8,7 @@
     },
     "authors": [
         {
-            "name": "Sandro Magalhães",
+            "name": "Sandro Magalhaes",
             "email": "sandro.a.maglhaes@inesctec.pt"
         }
     ],
