@@ -5,7 +5,7 @@
 define('DB_SERVER', 'localhost');
 define('DB_USERNAME', 'omicbotsuser');
 define('DB_PASSWORD', 'omicbots#');
-define('DB_NAME', 'omicbotsdb');
+define('DB_NAME', 'omicbostdb');
 
 // Estabelecer conexão com o banco de dados
 $conn = mysqli_connect(DB_SERVER, DB_USERNAME, DB_PASSWORD, DB_NAME);
