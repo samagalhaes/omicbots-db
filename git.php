@@ -31,7 +31,7 @@ $output = shell_exec('tail /var/log/apache2/error.log 2>&1');
 echo "<pre>$output</pre>";
 echo "done";
 
-$output = shell_exec('composer init 2>&1');
+$output = shell_exec('composer install 2>&1');
 // Exibir a saída do comando
 echo "<pre>$output</pre>";
 echo "done";
