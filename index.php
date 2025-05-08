@@ -1,75 +1,100 @@
 <?php
-// index.php - Arquivo principal da aplicação
+require_once 'vendor/autoload.php';  // For Composer autoloading
+require_once 'config/config.php';    // Database configuration
+require_once 'classes/Database.php'; // Database connection class
+require_once 'classes/DataManager.php'; // Data management class
 
-// Incluir o autoloader do Composer
-require 'vendor/autoload.php';
-
-// Incluir arquivos de configuração e funções
-require_once 'config/config.php';
-require_once 'includes/functions.php';
-require_once 'models/DataModel.php';
-
-// Inicializar o Smarty
+// Initialize Smarty
 $smarty = new Smarty();
 $smarty->setTemplateDir('templates');
 $smarty->setCompileDir('templates_c');
 $smarty->setCacheDir('cache');
 $smarty->setConfigDir('configs');
 
-// Inicializar o modelo de dados
-$dataModel = new DataModel($conn);
+// Initialize Database connection
+$db = new Database();
+$conn = $db->getConnection();
 
-// Obter categorias, culturas e projetos para os filtros
-$crops = $dataModel->getCrops();
-$projects = $dataModel->getProjects();
+// Initialize Data Manager
+$dataManager = new DataManager($conn);
 
-// Inicializar variáveis
+// Get filter options for different categories
+$spectraDevices = $dataManager->getSpectraDevices();
+$years = $dataManager->getYears();
+$cropTypes = $dataManager->getCropTypes();
+
+// Process form submission if any
+$filters = [];
 $data = [];
-$message = '';
-$totalRecords = 0;
+$downloadFormat = 'csv';
 
-// Processar formulário se enviado
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $filters = [
-        'categories' => isset($_POST['categories']) ? $_POST['categories'] : [],
-        'crop' => isset($_POST['crop']) ? $_POST['crop'] : 'all',
-        'project' => isset($_POST['project']) ? $_POST['project'] : 'all',
-        'date_from' => isset($_POST['date_from']) ? $_POST['date_from'] : '',
-        'date_to' => isset($_POST['date_to']) ? $_POST['date_to'] : '',
-        'limit' => isset($_POST['limit']) ? (int)$_POST['limit'] : 1000
-    ];
-    
-    $result = $dataModel->queryData($filters);
-    
-    if (isset($result['error'])) {
-        $message = $result['error'];
-    } else {
-        $data = $result['data'];
-        $totalRecords = count($data);
-        
-        // Processar pedidos de download
-        if (isset($_POST['download'])) {
-            $format = $_POST['format'];
-            $filename = "agricultural_data_" . date('Y-m-d') . "." . strtolower($format);
-            
-            if ($format == 'CSV') {
-                $dataModel->exportToCSV($data, $filename);
-            } elseif ($format == 'XLSX') {
-                $dataModel->exportToExcel($data, $filename);
-            }
-        }
-    }
+// Após obter os dados para a lista de dispositivos
+$spectraDevices = $dataManager->getSpectraDevices();
+$years = $dataManager->getYears();
+$cropTypes = $dataManager->getCropTypes();
+
+// Se não houver seleção de dispositivo especificada, 
+// use o primeiro dispositivo como padrão (se houver algum)
+if (!isset($_POST['spectra_device']) && !empty($spectraDevices)) {
+    $filters['spectra_device'] = $spectraDevices[0];
 }
 
-// Passar variáveis para o template
-$smarty->assign('crops', $crops);
-$smarty->assign('projects', $projects);
-$smarty->assign('data', $data);
-$smarty->assign('message', $message);
-$smarty->assign('totalRecords', $totalRecords);
-$smarty->assign('post', $_POST);
-$smarty->assign('currentYear', date('Y'));
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Check if it's a download request
+    if (isset($_POST['download']) && $_POST['download'] === 'true') {
+        $downloadFormat = isset($_POST['format']) ? $_POST['format'] : 'csv';
+        
+        // Get filters from POST data
+        if (isset($_POST['spectra_device']) && !empty($_POST['spectra_device'])) {
+            $filters['spectra_device'] = $_POST['spectra_device'];
+        }
+        
+        if (isset($_POST['years']) && is_array($_POST['years'])) {
+            $filters['years'] = $_POST['years'];
+        }
+        
+        if (isset($_POST['crop_types']) && is_array($_POST['crop_types'])) {
+            $filters['crop_types'] = $_POST['crop_types'];
+        }
+        
+        // Generate and download the file
+        $dataManager->downloadData($filters, $downloadFormat);
+        exit; // Stop execution after download
+    } else {
+        // It's a filter request
+        if (isset($_POST['spectra_device']) && !empty($_POST['spectra_device'])) {
+            $filters['spectra_device'] = $_POST['spectra_device'];
+        }
+        
+        if (isset($_POST['years']) && is_array($_POST['years'])) {
+            $filters['years'] = $_POST['years'];
+        }
+        
+        if (isset($_POST['crop_types']) && is_array($_POST['crop_types'])) {
+            $filters['crop_types'] = $_POST['crop_types'];
+        }
+        
+        // Get filtered data
+        $data = $dataManager->getData($filters, 5);
+    }
+} else {
+    // Default: get limited preview data with default filter
+    $data = $dataManager->getData($filters, 5); // Get first 5 rows
+}
 
-// Exibir o template
+// Count selected records and columns
+$recordCount = count($data);
+$columnCount = $data ? count($data[0]) : 0;
+
+// Assign variables to Smarty
+$smarty->assign('spectraDevices', $spectraDevices);
+$smarty->assign('years', $years);
+$smarty->assign('cropTypes', $cropTypes);
+$smarty->assign('data', $data);
+$smarty->assign('filters', $filters);
+$smarty->assign('recordCount', $recordCount);
+$smarty->assign('columnCount', $columnCount);
+
+// Display the template
 $smarty->display('index.tpl');
 ?>

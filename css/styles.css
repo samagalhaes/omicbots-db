@@ -1,0 +1,420 @@
+/* styles.css - Refined CSS to match the FAO STAT example */
+
+/* Global Styles */
+body {
+    font-family: 'Roboto', Arial, sans-serif;
+    color: #333;
+    background-color: #f5f7fa;
+    margin: 0;
+    padding: 0;
+}
+
+.container-fluid {
+    padding: 0;
+}
+
+/* Sidebar Styles */
+.sidebar {
+    background-color: #f5f7fa;
+    padding: 20px;
+    border-right: 1px solid #e1e5eb;
+    height: 100vh;
+    overflow-y: auto;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.sidebar-header {
+    color: #0d6efd;
+    border-bottom: 2px solid #0d6efd;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 16px;
+}
+
+/* Filter Section Styles */
+.filter-section {
+    margin-bottom: 25px;
+}
+
+.filter-title {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 10px;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.filter-box {
+    background-color: white;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* Search Input Styles */
+.search-input {
+    margin-bottom: 10px;
+}
+
+.search-input .form-control {
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 14px;
+}
+
+.search-input .form-control:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.search-input .form-control::placeholder {
+    color: #adb5bd;
+    font-style: italic;
+}
+
+/* Filter Options Styles */
+.filter-options {
+    max-height: 200px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    background-color: #f8f9fa;
+}
+
+.filter-option {
+    padding: 5px 8px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.filter-option:last-child {
+    border-bottom: none;
+}
+
+.filter-option:nth-child(odd) {
+    background-color: #f8f9fa;
+}
+
+.filter-option:nth-child(even) {
+    background-color: #ffffff;
+}
+
+/* Checkbox Styles */
+.form-check {
+    display: flex;
+    align-items: center;
+    margin: 0;
+}
+
+.form-check-input {
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+.form-check-label {
+    font-size: 14px;
+    cursor: pointer;
+    margin-bottom: 0;
+    user-select: none;
+}
+
+/* Filter Buttons Styles */
+.filter-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
+.filter-buttons .btn {
+    font-size: 12px;
+    padding: 4px 8px;
+    background-color: #f8f9fa;
+    border-color: #ced4da;
+    color: #495057;
+}
+
+.filter-buttons .btn:hover {
+    background-color: #e9ecef;
+}
+
+/* Apply Filters Button */
+.btn-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 14px;
+    padding: 8px 16px;
+}
+
+.btn-primary:hover {
+    background-color: #0b5ed7;
+    border-color: #0a58ca;
+}
+
+/* Main Content Area */
+.main-content {
+    padding: 20px 30px;
+    background-color: #ffffff;
+}
+
+.main-content h2 {
+    color: #333;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+/* Tabs Styles */
+.nav-tabs {
+    border-bottom: 1px solid #dee2e6;
+    margin-bottom: 20px;
+}
+
+.nav-tabs .nav-link {
+    color: #495057;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-bottom: none;
+    margin-right: 5px;
+    font-weight: 500;
+    font-size: 14px;
+    padding: 8px 16px;
+}
+
+.nav-tabs .nav-link:hover {
+    color: #0d6efd;
+    border-color: #e9ecef #e9ecef #dee2e6;
+}
+
+.nav-tabs .nav-link.active {
+    color: #0d6efd;
+    background-color: #fff;
+    border-color: #dee2e6 #dee2e6 #fff;
+    font-weight: 600;
+}
+
+/* Card Styles */
+.card {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e9ecef;
+    margin-bottom: 20px;
+}
+
+.card-title {
+    color: #333;
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 15px;
+}
+
+.card-body {
+    padding: 20px;
+}
+
+/* Download Section */
+.download-options {
+    margin-bottom: 25px;
+}
+
+.btn-download {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    color: white;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 14px;
+    padding: 8px 16px;
+}
+
+.btn-download:hover {
+    background-color: #0b5ed7;
+    border-color: #0a58ca;
+}
+
+/* Badge Styles */
+.badge {
+    font-weight: 500;
+    padding: 5px 8px;
+    font-size: 12px;
+}
+
+/* Data Table Styles */
+.data-table {
+    margin-top: 20px;
+}
+
+.table {
+    width: 100%;
+    margin-bottom: 20px;
+    color: #212529;
+    border-collapse: collapse;
+}
+
+.table th {
+    background-color: #f8f9fa;
+    color: #495057;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    padding: 10px;
+    text-align: left;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.table td {
+    padding: 10px;
+    border-bottom: 1px solid #e9ecef;
+    font-size: 14px;
+    vertical-align: middle;
+}
+
+.table tbody tr:nth-of-type(odd) {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.table tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Pagination Styles */
+.pagination {
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.pagination .page-link {
+    color: #0d6efd;
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+    padding: 6px 12px;
+    font-size: 14px;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    color: white;
+}
+
+.pagination .page-item.disabled .page-link {
+    color: #6c757d;
+    pointer-events: none;
+    background-color: #fff;
+    border-color: #dee2e6;
+}
+
+/* Responsive adjustments */
+@media (max-width: 991.98px) {
+    .sidebar {
+        height: auto;
+        min-height: 0;
+        border-right: none;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .container-fluid .row {
+        flex-direction: column;
+    }
+    
+    .col-md-3, .col-md-9 {
+        max-width: 100%;
+        flex: 0 0 100%;
+    }
+}
+
+/* FAO STAT specific filter style */
+.filter-options {
+    border-radius: 0;
+    border: none;
+    background-color: #fff;
+}
+
+.filter-option {
+    padding: 8px 12px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.filter-option:nth-child(odd) {
+    background-color: #f9f9f9;
+}
+
+/* FAO STAT specific filter buttons */
+.filter-buttons {
+    border-top: 1px solid #e9ecef;
+    padding-top: 10px;
+    margin-top: 5px;
+}
+
+.filter-buttons .btn {
+    border: none;
+    background-color: transparent;
+    color: #0d6efd;
+    font-weight: 500;
+    padding: 4px 0;
+    font-size: 13px;
+}
+
+.filter-buttons .btn:hover {
+    background-color: transparent;
+    text-decoration: underline;
+}
+
+/* Estilos específicos para radio buttons */
+.form-check-input[type="radio"] {
+    margin-top: 0.25rem;
+    cursor: pointer;
+}
+
+/* Destacar a opção "All" */
+#device_all + .form-check-label {
+    font-weight: 500;
+}
+
+/* Remover a div de botões filter-buttons nos filtros de radio button */
+.filter-section:has(.spectra-device-radio) .filter-buttons {
+    display: none;
+}
+
+/* Adicionar uma pequena margem inferior à última opção */
+.filter-options .filter-option:last-child {
+    margin-bottom: 5px;
+}
+
+/* Estilo para a mensagem de nenhum resultado */
+.no-results-message {
+    padding: 10px;
+    text-align: center;
+    font-style: italic;
+    color: #6c757d;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    margin: 5px 0;
+}
+
+/* Estilo para radio button selecionado */
+.form-check-input[type="radio"]:checked + .form-check-label {
+    color: #0d6efd;
+    font-weight: 500;
+}
+
+/* Melhorar espaçamento nas opções de filtro */
+.filter-option {
+    padding: 6px 10px;
+}
+
+/* Se o navegador suportar :has, podemos ocultar os botões filter-buttons */
+@supports selector(:has(a, b)) {
+    .filter-section:has(.spectra-device-radio) .filter-buttons {
+        display: none;
+    }
+}
