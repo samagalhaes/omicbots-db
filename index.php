@@ -22,6 +22,8 @@ $dataManager = new DataManager($conn);
 $spectraDevices = $dataManager->getSpectraDevices();
 $years = $dataManager->getYears();
 $cropTypes = $dataManager->getCropTypes();
+$projects = $dataManager->getProjects();
+print_r($filters); 
 
 // Process form submission if any
 $filters = [];
@@ -56,6 +58,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (isset($_POST['crop_types']) && is_array($_POST['crop_types'])) {
             $filters['crop_types'] = $_POST['crop_types'];
         }
+
+        if (isset($_POST['projects']) && is_array($_POST['projects'])) {
+            $filters['projects'] = $_POST['projects'];
+        }
+
+        if (isset($_POST['data_categories']) && is_array($_POST['data_categories'])) {
+            $filters['data_categories'] = $_POST['data_categories'];
+        }
         
         // Generate and download the file
         $dataManager->downloadData($filters, $downloadFormat);
@@ -73,23 +83,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (isset($_POST['crop_types']) && is_array($_POST['crop_types'])) {
             $filters['crop_types'] = $_POST['crop_types'];
         }
+
+        if (isset($_POST['projects']) && is_array($_POST['projects'])) {
+            $filters['projects'] = $_POST['projects'];
+        }
+
+        if (isset($_POST['data_categories']) && is_array($_POST['data_categories'])) {
+            $filters['data_categories'] = $_POST['data_categories'];
+        }
         
         // Get filtered data
-        $data = $dataManager->getData($filters, 5);
+        $data = $dataManager->getData($filters, 10);
     }
 } else {
     // Default: get limited preview data with default filter
-    $data = $dataManager->getData($filters, 5); // Get first 5 rows
+    $data = $dataManager->getData($filters, 10); // Get first 10 rows
 }
 
 // Count selected records and columns
 $recordCount = count($data);
 $columnCount = $data ? count($data[0]) : 0;
 
+print_r($filters);
+$dataCategories = $dataManager->getAvailableDataCategories($filters);
+
 // Assign variables to Smarty
 $smarty->assign('spectraDevices', $spectraDevices);
 $smarty->assign('years', $years);
 $smarty->assign('cropTypes', $cropTypes);
+$smarty->assign('projects', $projects);
+$smarty->assign('dataCategories', $dataCategories);
 $smarty->assign('data', $data);
 $smarty->assign('filters', $filters);
 $smarty->assign('recordCount', $recordCount);

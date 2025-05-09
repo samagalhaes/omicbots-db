@@ -58,7 +58,13 @@
                                             <input class="form-check-input year-checkbox" type="checkbox" value="{$year}"
                                                 id="year_{$year}" name="years[]"
                                                 {if isset($filters.years) && in_array($year, $filters.years)}checked{/if}>
-                                            <label class="form-check-label" for="year_{$year}">{$year}</label>
+                                            <label class="form-check-label {if $year == 0}na-label{/if}" for="year_{$year}">
+                                                {if $year == 0}
+                                                    N/A
+                                                {else}
+                                                    {$year}
+                                                {/if}
+                                            </label>
                                         </div>
                                     </div>
                                 {/foreach}
@@ -98,6 +104,64 @@
                                     id="selectAllCrops">Select All</button>
                                 <button type="button" class="btn btn-sm btn-outline-secondary" id="clearAllCrops">Clear
                                     All</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="filter-section">
+                        <div class="filter-title">PROJECT</div>
+                        <div class="filter-box">
+                            <div class="search-input">
+                                <input type="text" class="form-control" placeholder="Filter projects, e.g. OmiBots"
+                                    id="searchProjects">
+                            </div>
+                            <div class="filter-options">
+                                {foreach from=$projects item=project}
+                                    <div class="filter-option">
+                                        <div class="form-check">
+                                            <input class="form-check-input project-checkbox" type="checkbox"
+                                                value="{$project}"
+                                                id="project_{$project|replace:' ':'_'|replace:'-':'_'|replace:'.':'_'}"
+                                                name="projects[]"
+                                                {if isset($filters.projects) && in_array($project, $filters.projects)}checked{/if}>
+                                            <label class="form-check-label {if $project == 'N/A'}na-label{/if}"
+                                                for="project_{$project|replace:' ':'_'|replace:'-':'_'|replace:'.':'_'}">
+                                                {$project}
+                                            </label>
+                                        </div>
+                                    </div>
+                                {/foreach}
+                            </div>
+                            <div class="filter-buttons">
+                                <button type="button" class="btn btn-sm" id="selectAllProjects">Select All</button>
+                                <button type="button" class="btn btn-sm" id="clearAllProjects">Clear All</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="filter-section">
+                        <div class="filter-title">ADDITIONAL DATA</div>
+                        <div class="filter-box">
+                            <div class="filter-options">
+                                {foreach from=$dataCategories key=categoryKey item=category}
+                                    <div class="filter-option">
+                                        <div class="form-check">
+                                            <input class="form-check-input category-checkbox" type="checkbox"
+                                                value="{$categoryKey}" id="category_{$categoryKey}" name="data_categories[]"
+                                                {if isset($filters.data_categories) && in_array($categoryKey, $filters.data_categories)}checked{/if}>
+                                            <label class="form-check-label" for="category_{$categoryKey}">
+                                                {$category.name}
+                                                {if isset($category.count)}
+                                                    <span class="category-count">({$category.count})</span>
+                                                {/if}
+                                            </label>
+                                        </div>
+                                    </div>
+                                {/foreach}
+                            </div>
+                            <div class="filter-buttons">
+                                <button type="button" class="btn btn-sm" id="selectAllCategories">Select All</button>
+                                <button type="button" class="btn btn-sm" id="clearAllCategories">Clear All</button>
                             </div>
                         </div>
                     </div>
@@ -180,7 +244,10 @@
                                 <thead>
                                     <tr>
                                         <th>ID</th>
-                                        <th>Year</th>
+                                        <th>Date</th>
+                                        <th>Project</th>
+                                        <th>Code Field</th>
+                                        <th>Test site</th>
                                         <th>Spectra Device</th>
                                         <th>Crop</th>
                                         <th>Cultivar</th>
@@ -192,10 +259,13 @@
                                     {foreach from=$data item=row}
                                         <tr>
                                             <td>{$row.ID}</td>
-                                            <td>{$row.Year}</td>
+                                            <td>{$row.Date}</td>
+                                            <td>{$row.Project}</td>
+                                            <td>{$row.Code_field}</td>
+                                            <td>{$row.Test_site}</td>
                                             <td>{$row.Spectra_device}</td>
                                             <td>{$row.Crop}</td>
-                                            <td>{$row.Intensity}</td>
+                                            <td>{$row.Cultivar}</td>
                                             <td>{$row.Morphology}</td>
                                             <td>{$row.Local}</td>
                                         </tr>
@@ -208,7 +278,7 @@
                             </table>
 
                             {* Pagination - This would be implemented with actual paging logic *}
-                            <nav aria-label="Data pagination">
+                            {* <nav aria-label="Data pagination">
                                 <ul class="pagination justify-content-center">
                                     <li class="page-item disabled">
                                         <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
@@ -220,7 +290,7 @@
                                         <a class="page-link" href="#">Next</a>
                                     </li>
                                 </ul>
-                            </nav>
+                            </nav> *}
                         </div>
                     </div>
 

@@ -36,7 +36,17 @@ class DataManager
      */
     public function getYears()
     {
-        $query = "SELECT DISTINCT YEAR(c.Date) as Year FROM cropid c ORDER BY Year DESC";
+        $query = "
+            SELECT DISTINCT 
+                CASE 
+                    WHEN c.Date IS NULL OR YEAR(c.Date) = 0 THEN 0
+                    ELSE YEAR(c.Date) 
+                END as Year
+            FROM 
+                cropid c 
+            ORDER BY 
+                Year DESC
+        ";
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
 
@@ -132,6 +142,205 @@ class DataManager
         }
     }
 
+    public function getProjects()
+    {
+        $query = "
+            SELECT DISTINCT 
+                CASE 
+                    WHEN c.Project IS NULL OR TRIM(c.Project) = '' THEN 'N/A'
+                    ELSE c.Project 
+                END as Project
+            FROM 
+                cropid c 
+            ORDER BY 
+                Project ASC
+        ";
+
+        try {
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute();
+
+            $projects = [];
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $projects[] = $row['Project'];
+            }
+
+            return $projects;
+        } catch (PDOException $e) {
+            error_log("Erro ao obter lista de projetos: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Obtém as categorias de dados disponíveis para filtragem
+     * @return array Lista de categorias de dados disponíveis
+     */
+    public function getDataCategories()
+    {
+        // Lista estática de categorias de dados conforme o schema do banco
+        return [
+            'lab_measures' => 'Laboratory Measures',
+            'ecophysio' => 'Ecophysio',
+            'xrf' => 'XRF',
+            'hormones' => 'Hormones',
+            'genes' => 'Genes',
+        ];
+    }
+
+    public function getAvailableDataCategories($filters = [])
+    {
+        $allCategories = $this->getDataCategories();
+        $availableCategories = [];
+
+        // Clonar os filtros para remover filtros de categoria (se existirem)
+        $filtersWithoutCategories = $filters;
+        unset($filtersWithoutCategories['data_categories']);
+
+        // Para cada categoria, verificar se existem dados com os filtros atuais
+        foreach ($allCategories as $categoryKey => $categoryName) {
+            // Construir consulta que conta registros na categoria com os filtros atuais
+            $query = "
+                SELECT COUNT(DISTINCT t.ID) as count
+                FROM {$categoryKey} t
+                JOIN cropid c ON t.ID = c.ID
+                WHERE 1=1
+            ";
+
+            $params = [];
+
+            // Aplicar filtros existentes (ano, projeto, etc.)
+            // Filtro de ano
+            print_r($filtersWithoutCategories);
+            if (isset($filtersWithoutCategories['years']) && !empty($filtersWithoutCategories['years'])) {
+                $hasNA = false;
+                $yearValues = [];
+
+                foreach ($filtersWithoutCategories['years'] as $year) {
+                    if ($year == 0) {
+                        $hasNA = true;
+                    } else {
+                        $yearValues[] = $year;
+                    }
+                }
+
+                if (!empty($yearValues) && $hasNA) {
+                    $placeholders = [];
+                    foreach ($yearValues as $key => $year) {
+                        $paramName = ":year" . $key;
+                        $placeholders[] = $paramName;
+                        $params[$paramName] = $year;
+                    }
+
+                    $query .= " AND (YEAR(c.Date) IN (" . implode(", ", $placeholders) . ") OR c.Date IS NULL OR YEAR(c.Date) = 0)";
+                } else if (!empty($yearValues)) {
+                    $placeholders = [];
+                    foreach ($yearValues as $key => $year) {
+                        $paramName = ":year" . $key;
+                        $placeholders[] = $paramName;
+                        $params[$paramName] = $year;
+                    }
+
+                    $query .= " AND YEAR(c.Date) IN (" . implode(", ", $placeholders) . ")";
+                } else if ($hasNA) {
+                    $query .= " AND (c.Date IS NULL OR YEAR(c.Date) = 0)";
+                }
+            }
+
+            // Filtro de projeto
+            if (isset($filtersWithoutCategories['projects']) && !empty($filtersWithoutCategories['projects'])) {
+                $hasNA = false;
+                $projectValues = [];
+
+                foreach ($filtersWithoutCategories['projects'] as $project) {
+                    if ($project === 'N/A') {
+                        $hasNA = true;
+                    } else {
+                        $projectValues[] = $project;
+                    }
+                }
+
+                if (!empty($projectValues) && $hasNA) {
+                    $placeholders = [];
+                    foreach ($projectValues as $key => $project) {
+                        $paramName = ":project" . $key;
+                        $placeholders[] = $paramName;
+                        $params[$paramName] = $project;
+                    }
+
+                    $query .= " AND (c.Project IN (" . implode(", ", $placeholders) . ") OR c.Project IS NULL OR TRIM(c.Project) = '')";
+                } else if (!empty($projectValues)) {
+                    $placeholders = [];
+                    foreach ($projectValues as $key => $project) {
+                        $paramName = ":project" . $key;
+                        $placeholders[] = $paramName;
+                        $params[$paramName] = $project;
+                    }
+
+                    $query .= " AND c.Project IN (" . implode(", ", $placeholders) . ")";
+                } else if ($hasNA) {
+                    $query .= " AND (c.Project IS NULL OR TRIM(c.Project) = '')";
+                }
+            }
+
+            // Adicionar mais filtros conforme necessário (crop, etc.)
+
+            // Executar a consulta
+            try {
+                print_r($query);
+                $stmt = $this->conn->prepare($query);
+
+                // Bind parameters
+                foreach ($params as $key => $value) {
+                    $stmt->bindValue($key, $value);
+                }
+
+                $stmt->execute();
+                $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                // Se existem registros para esta categoria com os filtros atuais, adicionar à lista
+                if ($result && $result['count'] > 0) {
+                    $availableCategories[$categoryKey] = [
+                        'name' => $categoryName,
+                        'count' => $result['count']
+                    ];
+                }
+            } catch (PDOException $e) {
+                // Log do erro
+                error_log("Erro ao verificar disponibilidade da categoria {$categoryKey}: " . $e->getMessage());
+            }
+        }
+
+        print_r($availableCategories);
+        return $availableCategories;
+    }
+
+    /**
+     * Get available gt params
+     * @return array List of available parameters
+     */
+    public function getAvailableGtParams($param)
+    {
+        if ($param == 'xrf') {
+            $query = "SELECT DISTINCT $param.Molecule FROM $param ORDER BY $param.Molecule";
+        } else {
+            $query = "SELECT DISTINCT $param.Parameter FROM $param ORDER BY $param.Parameter";
+        }
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+
+        $params = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            if ($param == 'xrf') {
+                $params[] = $row["Molecule"];
+            } else {
+                $params[] = $row["Parameter"];
+            }
+        }
+
+        return $params;
+    }
+
     /**
      * Get data based on filters with opção para formato pivotado de wavelengths
      * @param array $filters Array of filter criteria
@@ -155,6 +364,11 @@ class DataManager
         }
 
         $specificWavelengths = $this->getAvailableWavelengths($spectraDevice, $filters);
+        $lab_measures = $this->getAvailableGtParams('lab_measures');
+        $ecophysio = $this->getAvailableGtParams('ecophysio');
+        $xrf = $this->getAvailableGtParams('xrf');
+        $hormones = $this->getAvailableGtParams('hormones');
+        $genes = $this->getAvailableGtParams('genes');
 
         // Se não houver wavelengths, retornar array vazio
         if (empty($specificWavelengths)) {
@@ -167,17 +381,120 @@ class DataManager
         // Começar a construir a consulta
         $query = "
             SELECT 
-                s.ID,
+                c.ID,
                 c.Date,
                 YEAR(c.Date) as Year,
-                s.Spectra_device,
+                c.Code_field,
+                c.FW_sample,
                 c.Crop,
                 c.Cultivar,
+                c.Irrigation,
                 c.Test_site,
                 c.Project,
+                c.Coord,
+                s.Spectra_device,
                 s.Morphology,
                 s.Local,
         ";
+
+        if (isset($filters['data_categories']) && !empty($filters['data_categories'])) {
+            foreach ($filters['data_categories'] as $category) {
+                $pivotColumns = [];
+                if ($category == 'lab_measures') {
+                    foreach ($lab_measures as $measure) {
+                        $columnName = "" . str_replace(' ', '_', $measure);
+                        $columnName = "" . str_replace('(', '_', $columnName);
+                        $columnName = "" . str_replace(')', '_', $columnName);
+                        $columnName = "" . str_replace('/', '_', $columnName);
+                        $columnName = "" . str_replace('º', '_', $columnName);
+                        $columnName = "" . str_replace('+', '_', $columnName);
+                        $columnName = "" . str_replace('%', '_', $columnName);
+                        $columnName = "" . str_replace('.', '_', $columnName);
+                        $columnName = "" . str_replace('=', '_', $columnName);
+                        $columnName = "" . str_replace('-1', '_', $columnName);
+                        $pivotColumns[] = "MAX(CASE WHEN lab_measures.Parameter = " . $this->conn->quote($measure) . " THEN lab_measures.Value ELSE NULL END) AS " . $columnName;
+                    }
+                    // Adicionar as colunas pivot à consulta
+                    $query .= implode(",\n                ", $pivotColumns);
+                    $query .= ",\n";
+                } else if ($category == 'ecophysio') {
+                    foreach ($ecophysio as $measure) {
+                        $columnName = "" . str_replace(' ', '_', $measure);
+                        $columnName = "" . str_replace('(', '_', $columnName);
+                        $columnName = "" . str_replace(')', '_', $columnName);
+                        $columnName = "" . str_replace('/', '_', $columnName);
+                        $columnName = "" . str_replace('º', '_', $columnName);
+                        $columnName = "" . str_replace('+', '_', $columnName);
+                        $columnName = "" . str_replace('%', '_', $columnName);
+                        $columnName = "" . str_replace('.', '_', $columnName);
+                        $columnName = "" . str_replace('=', '_', $columnName);
+                        $columnName = "" . str_replace('-1', '_', $columnName);
+                        $columnName = "" . str_replace('\'', '_', $columnName);
+                        $pivotColumns[] = "MAX(CASE WHEN ecophysio.Parameter = " . $this->conn->quote($measure) . " THEN ecophysio.Value ELSE NULL END) AS " . $columnName;
+                    }
+                    // Adicionar as colunas pivot à consulta
+                    $query .= implode(",\n                ", $pivotColumns);
+                    $query .= ",\n";
+                } else if ($category == 'xrf') {
+                    foreach ($xrf as $measure) {
+                        $columnName = "" . str_replace(' ', '_', $measure);
+                        $columnName = "" . str_replace('(', '_', $columnName);
+                        $columnName = "" . str_replace(')', '_', $columnName);
+                        $columnName = "" . str_replace('/', '_', $columnName);
+                        $columnName = "" . str_replace('º', '_', $columnName);
+                        $columnName = "" . str_replace('+', '_', $columnName);
+                        $columnName = "" . str_replace('%', '_', $columnName);
+                        $columnName = "" . str_replace('.', '_', $columnName);
+                        $columnName = "" . str_replace('=', '_', $columnName);
+                        $columnName = "" . str_replace('-1', '_', $columnName);
+                        $columnName = "" . str_replace('\'', '_', $columnName);
+                        $pivotColumns[] = "MAX(CASE WHEN xrf.Molecule = " . $this->conn->quote($measure) . " THEN xrf.Value ELSE NULL END) AS " . $columnName . "_" . 
+                                          ", MAX(CASE WHEN xrf.Molecule = " . $this->conn->quote($measure) . " THEN xrf.Error ELSE NULL END) AS " . $columnName . "_Error";
+                    }
+                    // Adicionar as colunas pivot à consulta
+                    $query .= implode(",\n                ", $pivotColumns);
+                    $query .= ",\n";
+                } else if ($category == 'hormones') {
+                    foreach ($hormones as $measure) {
+                        $columnName = "" . str_replace(' ', '_', $measure);
+                        $columnName = "" . str_replace('(', '_', $columnName);
+                        $columnName = "" . str_replace(')', '_', $columnName);
+                        $columnName = "" . str_replace('/', '_', $columnName);
+                        $columnName = "" . str_replace('º', '_', $columnName);
+                        $columnName = "" . str_replace('+', '_', $columnName);
+                        $columnName = "" . str_replace('%', '_', $columnName);
+                        $columnName = "" . str_replace('.', '_', $columnName);
+                        $columnName = "" . str_replace('=', '_', $columnName);
+                        $columnName = "" . str_replace('-1', '_', $columnName);
+                        $columnName = "" . str_replace('\'', '_', $columnName);
+                        $pivotColumns[] = "MAX(CASE WHEN hormones.Parameter = " . $this->conn->quote($measure) . " THEN hormones.Value ELSE NULL END) AS " . $columnName . 
+                                          ", MAX(CASE WHEN hormones.Parameter = " . $this->conn->quote($measure) . " THEN hormones.Laboratory ELSE NULL END) AS " . $columnName . "_Laboratory";
+                    }
+                    // Adicionar as colunas pivot à consulta
+                    $query .= implode(",\n                ", $pivotColumns);
+                    $query .= ",\n";
+                } else if ($category == 'genes') {
+                    foreach ($genes as $measure) {
+                        $columnName = "" . str_replace(' ', '_', $measure);
+                        $columnName = "" . str_replace('(', '_', $columnName);
+                        $columnName = "" . str_replace(')', '_', $columnName);
+                        $columnName = "" . str_replace('/', '_', $columnName);
+                        $columnName = "" . str_replace('º', '_', $columnName);
+                        $columnName = "" . str_replace('+', '_', $columnName);
+                        $columnName = "" . str_replace('%', '_', $columnName);
+                        $columnName = "" . str_replace('.', '_', $columnName);
+                        $columnName = "" . str_replace('=', '_', $columnName);
+                        $columnName = "" . str_replace('-1', '_', $columnName);
+                        $columnName = "" . str_replace('\'', '_', $columnName);
+                        $pivotColumns[] = "MAX(CASE WHEN genes.Parameter = " . $this->conn->quote($measure) . " THEN genes.Value ELSE NULL END) AS " . $columnName . 
+                                          ", MAX(CASE WHEN genes.Parameter = " . $this->conn->quote($measure) . " THEN genes.Laboratory ELSE NULL END) AS " . $columnName . "_Laboratory";
+                    }
+                    // Adicionar as colunas pivot à consulta
+                    $query .= implode(",\n                ", $pivotColumns);
+                    $query .= ",\n";
+                }
+            }
+        }
 
         // Adicionar as colunas dinâmicas para cada wavelength
         $pivotColumns = [];
@@ -193,8 +510,17 @@ class DataManager
         // Completar a consulta com as tabelas e cláusulas GROUP BY
         $query .= "
             FROM 
-                spectra s
-                JOIN cropid c ON s.ID = c.ID
+                cropid c
+                JOIN spectra s ON s.ID = c.ID ";
+
+        if (isset($filters['data_categories']) && !empty($filters['data_categories'])) {
+            foreach ($filters['data_categories'] as $category) {
+            $query .= "
+                LEFT JOIN $category ON c.ID = $category.ID";
+            }
+        }
+
+        $query .= "
             WHERE 
                 1=1
         ";
@@ -206,6 +532,8 @@ class DataManager
         if (isset($filters['spectra_device']) && !empty($filters['spectra_device'])) {
             $query .= " AND s.Spectra_device = :device";
             $params[':device'] = $filters['spectra_device'];
+        } else {
+            $query .= " AND s.Spectra_device = NULL";
         }
 
         // Filtros de wavelength (aplicados apenas para restringir o conjunto de dados base)
@@ -221,13 +549,46 @@ class DataManager
 
         // Filtros adicionais
         if (isset($filters['years']) && !empty($filters['years'])) {
-            $placeholders = [];
-            foreach ($filters['years'] as $key => $year) {
-                $paramName = ":year" . $key;
-                $placeholders[] = $paramName;
-                $params[$paramName] = $year;
+            $hasNA = false;
+            $yearValues = [];
+
+            // Separar o caso especial 0 (N/A) dos anos normais
+            foreach ($filters['years'] as $year) {
+                if ($year == 0) {
+                    $hasNA = true;
+                } else {
+                    $yearValues[] = $year;
+                }
             }
-            $query .= " AND YEAR(c.Date) IN (" . implode(", ", $placeholders) . ")";
+
+            // Se temos anos normais e N/A, usamos uma condição composta
+            if (!empty($yearValues) && $hasNA) {
+                $placeholders = [];
+                foreach ($yearValues as $key => $year) {
+                    $paramName = ":year" . $key;
+                    $placeholders[] = $paramName;
+                    $params[$paramName] = $year;
+                }
+
+                $query .= " AND (YEAR(c.Date) IN (" . implode(", ", $placeholders) . ") OR c.Date IS NULL OR YEAR(c.Date) = 0)";
+            }
+            // Se temos apenas anos normais
+            else if (!empty($yearValues)) {
+                $placeholders = [];
+                foreach ($yearValues as $key => $year) {
+                    $paramName = ":year" . $key;
+                    $placeholders[] = $paramName;
+                    $params[$paramName] = $year;
+                }
+
+                $query .= " AND YEAR(c.Date) IN (" . implode(", ", $placeholders) . ")";
+            }
+            // Se temos apenas N/A
+            else if ($hasNA) {
+                $query .= " AND (c.Date IS NULL OR YEAR(c.Date) = 0)";
+            }
+        } else {
+            $query .= " AND c.Date IS NULL";
         }
 
         if (isset($filters['crop_types']) && !empty($filters['crop_types'])) {
@@ -238,6 +599,50 @@ class DataManager
                 $params[$paramName] = $crop;
             }
             $query .= " AND c.Crop IN (" . implode(", ", $placeholders) . ")";
+        } else {
+            $query .= " AND c.Crop IS NULL";
+        }
+
+        if (isset($filters['projects']) && !empty($filters['projects'])) {
+            $hasNA = false;
+            $projectValues = [];
+
+            // Separar o caso especial 'N/A' dos projetos normais
+            foreach ($filters['projects'] as $project) {
+                if ($project === 'N/A') {
+                    $hasNA = true;
+                } else {
+                    $projectValues[] = $project;
+                }
+            }
+
+            // Construir a cláusula SQL apropriada
+            if (!empty($projectValues) && $hasNA) {
+                // Caso com projetos normais e N/A
+                $placeholders = [];
+                foreach ($projectValues as $key => $project) {
+                    $paramName = ":project" . $key;
+                    $placeholders[] = $paramName;
+                    $params[$paramName] = $project;
+                }
+
+                $query .= " AND (c.Project IN (" . implode(", ", $placeholders) . ") OR c.Project IS NULL OR TRIM(c.Project) = '')";
+            } else if (!empty($projectValues)) {
+                // Caso apenas com projetos normais
+                $placeholders = [];
+                foreach ($projectValues as $key => $project) {
+                    $paramName = ":project" . $key;
+                    $placeholders[] = $paramName;
+                    $params[$paramName] = $project;
+                }
+
+                $query .= " AND c.Project IN (" . implode(", ", $placeholders) . ")";
+            } else if ($hasNA) {
+                // Caso apenas com N/A
+                $query .= " AND (c.Project IS NULL OR TRIM(c.Project) = '')";
+            }
+        } else {
+            $query .= " AND c.Project IS NULL";
         }
 
         // Restringir a query para incluir apenas as wavelengths de interesse
@@ -428,14 +833,19 @@ class DataManager
         $query = "
         SELECT 
             s.ID,
+            c.Date,
             YEAR(c.Date) as Year,
-            s.Spectra_device,
+            c.Code_field,
+            c.FW_sample,
             c.Crop,
             c.Cultivar,
-            s.Wavelength,
-            s.Intensity,
+            c.Irrigation,
+            c.Test_site,
+            c.Project,
+            c.Coord,
+            s.Spectra_device,
             s.Morphology,
-            s.Local
+            s.Local,
         FROM 
             spectra s
             JOIN cropid c ON s.ID = c.ID
@@ -459,12 +869,32 @@ class DataManager
 
         // Restante do código permanece o mesmo
         if (isset($filters['years']) && !empty($filters['years'])) {
-            $placeholders = [];
-            foreach ($filters['years'] as $key => $year) {
-                $paramName = ":year" . $key;
-                $placeholders[] = $paramName;
+            $hasNA = false;
+            $yearValues = [];
+
+            // Separar o caso especial 0 (N/A) dos anos normais
+            foreach ($filters['years'] as $year) {
+                if ($year == 0) {
+                    $hasNA = true;
+                } else {
+                    $yearValues[] = $year;
+                }
             }
-            $query .= " AND YEAR(c.Date) IN (" . implode(", ", $placeholders) . ")";
+
+            // Se temos anos normais e N/A, usamos uma condição composta
+            if (!empty($yearValues) && $hasNA) {
+                $yearPlaceholders = array_fill(0, count($yearValues), '?');
+                $query .= " AND (YEAR(c.Date) IN (" . implode(", ", $yearPlaceholders) . ") OR c.Date IS NULL OR YEAR(c.Date) = 0)";
+            }
+            // Se temos apenas anos normais
+            else if (!empty($yearValues)) {
+                $yearPlaceholders = array_fill(0, count($yearValues), '?');
+                $query .= " AND YEAR(c.Date) IN (" . implode(", ", $yearPlaceholders) . ")";
+            }
+            // Se temos apenas N/A
+            else if ($hasNA) {
+                $query .= " AND (c.Date IS NULL OR YEAR(c.Date) = 0)";
+            }
         }
 
         if (isset($filters['crop_types']) && !empty($filters['crop_types'])) {
@@ -474,6 +904,34 @@ class DataManager
                 $placeholders[] = $paramName;
             }
             $query .= " AND c.Crop IN (" . implode(", ", $placeholders) . ")";
+        }
+
+        if (isset($filters['projects']) && !empty($filters['projects'])) {
+            $hasNA = false;
+            $projectValues = [];
+
+            // Separar o caso especial 'N/A' dos projetos normais
+            foreach ($filters['projects'] as $project) {
+                if ($project === 'N/A') {
+                    $hasNA = true;
+                } else {
+                    $projectValues[] = $project;
+                }
+            }
+
+            // Construir a cláusula SQL apropriada
+            if (!empty($projectValues) && $hasNA) {
+                // Caso com projetos normais e N/A
+                $projectPlaceholders = array_fill(0, count($projectValues), '?');
+                $query .= " AND (c.Project IN (" . implode(", ", $projectPlaceholders) . ") OR c.Project IS NULL OR TRIM(c.Project) = '')";
+            } else if (!empty($projectValues)) {
+                // Caso apenas com projetos normais
+                $projectPlaceholders = array_fill(0, count($projectValues), '?');
+                $query .= " AND c.Project IN (" . implode(", ", $projectPlaceholders) . ")";
+            } else if ($hasNA) {
+                // Caso apenas com N/A
+                $query .= " AND (c.Project IS NULL OR TRIM(c.Project) = '')";
+            }
         }
 
         // Order by ID and wavelength
@@ -508,9 +966,20 @@ class DataManager
 
         // Restante do código permanece o mesmo
         if (isset($filters['years']) && !empty($filters['years'])) {
-            foreach ($filters['years'] as $key => $year) {
-                $paramName = ":year" . $key;
-                $stmt->bindValue($paramName, $year);
+            $yearValues = [];
+
+            // Filtrar apenas os anos não-zero para binding
+            foreach ($filters['years'] as $year) {
+                if ($year != 0) {
+                    $yearValues[] = $year;
+                }
+            }
+
+            // Só fazer binding para os anos normais
+            if (!empty($yearValues)) {
+                foreach ($yearValues as $year) {
+                    $stmt->bindValue($paramIndex++, $year);
+                }
             }
         }
 
@@ -518,6 +987,24 @@ class DataManager
             foreach ($filters['crop_types'] as $key => $crop) {
                 $paramName = ":crop" . $key;
                 $stmt->bindValue($paramName, $crop);
+            }
+        }
+
+        if (isset($filters['projects']) && !empty($filters['projects'])) {
+            $projectValues = [];
+
+            // Filtrar apenas projetos não-N/A para binding
+            foreach ($filters['projects'] as $project) {
+                if ($project !== 'N/A') {
+                    $projectValues[] = $project;
+                }
+            }
+
+            // Só fazer binding para os projetos normais
+            if (!empty($projectValues)) {
+                foreach ($projectValues as $project) {
+                    $stmt->bindValue($paramIndex++, $project);
+                }
             }
         }
 
@@ -531,4 +1018,3 @@ class DataManager
         }
     }
 }
-?>

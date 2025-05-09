@@ -418,3 +418,85 @@ body {
         display: none;
     }
 }
+
+.filter-option label.na-label {
+    font-style: italic;
+    color: #6c757d;
+}
+
+.filter-option label.na-label:after {
+    content: " (sem data)";
+    font-size: 0.85em;
+    opacity: 0.8;
+}
+
+/* Destacar o checkbox N/A quando selecionado */
+.filter-option input:checked + label.na-label {
+    color: #0d6efd;
+    font-weight: 500;
+}
+
+.project-checkbox + label.na-label {
+    font-style: italic;
+    color: #6c757d;
+}
+
+.project-checkbox + label.na-label:after {
+    content: " (sem projeto)";
+    font-size: 0.85em;
+    opacity: 0.8;
+}
+
+/* Destacar checkbox quando selecionado */
+.project-checkbox:checked + label {
+    color: #0d6efd;
+    font-weight: 500;
+}
+
+/* Mensagem de nenhum resultado */
+.no-results-message {
+    padding: 10px;
+    text-align: center;
+    font-style: italic;
+    color: #6c757d;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    margin: 5px 0;
+}
+
+.category-count {
+    font-size: 0.85em;
+    color: #6c757d;
+    margin-left: 5px;
+}
+
+.category-empty {
+    color: #dc3545;
+}
+
+.category-empty-label {
+    color: #6c757d;
+    font-style: italic;
+}
+
+/* Destacar checkbox quando selecionado */
+.category-checkbox:checked + label {
+    color: #0d6efd;
+    font-weight: 500;
+}
+
+.category-radio:checked + label {
+    color: #0d6efd;
+    font-weight: 500;
+}
+
+/* Estilo para checkboxes desabilitados */
+.category-checkbox:disabled + label {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Tooltip para checkboxes desabilitados */
+.category-checkbox:disabled {
+    cursor: not-allowed;
+}

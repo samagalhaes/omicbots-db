@@ -1,18 +1,18 @@
 <?php
-/* Smarty version 4.5.5, created on 2025-05-08 15:45:12
+/* Smarty version 4.5.5, created on 2025-05-09 14:20:27
   from '/var/www/html/omicbots-db/templates/index.tpl' */
 
 /* @var Smarty_Internal_Template $_smarty_tpl */
 if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   'version' => '4.5.5',
-  'unifunc' => 'content_681cd1883b6dc2_67933290',
+  'unifunc' => 'content_681e0f2b3bc049_57453990',
   'has_nocache_code' => false,
   'file_dependency' => 
   array (
     'baa2fffb19ded8cfff57b78558ccc8999587e2a8' => 
     array (
       0 => '/var/www/html/omicbots-db/templates/index.tpl',
-      1 => 1746718939,
+      1 => 1746800403,
       2 => 'file',
     ),
   ),
@@ -20,7 +20,7 @@ if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   array (
   ),
 ),false)) {
-function content_681cd1883b6dc2_67933290 (Smarty_Internal_Template $_smarty_tpl) {
+function content_681e0f2b3bc049_57453990 (Smarty_Internal_Template $_smarty_tpl) {
 $_smarty_tpl->_checkPlugins(array(0=>array('file'=>'/var/www/html/omicbots-db/vendor/smarty/smarty/libs/plugins/modifier.replace.php','function'=>'smarty_modifier_replace',),));
 ?>
 <!DOCTYPE html>
@@ -102,9 +102,15 @@ $_smarty_tpl->tpl_vars['year']->do_else = false;
                                                 id="year_<?php echo $_smarty_tpl->tpl_vars['year']->value;?>
 " name="years[]"
                                                 <?php if ((isset($_smarty_tpl->tpl_vars['filters']->value['years'])) && in_array($_smarty_tpl->tpl_vars['year']->value,$_smarty_tpl->tpl_vars['filters']->value['years'])) {?>checked<?php }?>>
-                                            <label class="form-check-label" for="year_<?php echo $_smarty_tpl->tpl_vars['year']->value;?>
-"><?php echo $_smarty_tpl->tpl_vars['year']->value;?>
-</label>
+                                            <label class="form-check-label <?php if ($_smarty_tpl->tpl_vars['year']->value == 0) {?>na-label<?php }?>" for="year_<?php echo $_smarty_tpl->tpl_vars['year']->value;?>
+">
+                                                <?php if ($_smarty_tpl->tpl_vars['year']->value == 0) {?>
+                                                    N/A
+                                                <?php } else { ?>
+                                                    <?php echo $_smarty_tpl->tpl_vars['year']->value;?>
+
+                                                <?php }?>
+                                            </label>
                                         </div>
                                     </div>
                                 <?php
@@ -156,6 +162,87 @@ $_smarty_tpl->smarty->ext->_foreach->restore($_smarty_tpl, 1);?>
                                     id="selectAllCrops">Select All</button>
                                 <button type="button" class="btn btn-sm btn-outline-secondary" id="clearAllCrops">Clear
                                     All</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="filter-section">
+                        <div class="filter-title">PROJECT</div>
+                        <div class="filter-box">
+                            <div class="search-input">
+                                <input type="text" class="form-control" placeholder="Filter projects, e.g. OmiBots"
+                                    id="searchProjects">
+                            </div>
+                            <div class="filter-options">
+                                <?php
+$_from = $_smarty_tpl->smarty->ext->_foreach->init($_smarty_tpl, $_smarty_tpl->tpl_vars['projects']->value, 'project');
+$_smarty_tpl->tpl_vars['project']->do_else = true;
+if ($_from !== null) foreach ($_from as $_smarty_tpl->tpl_vars['project']->value) {
+$_smarty_tpl->tpl_vars['project']->do_else = false;
+?>
+                                    <div class="filter-option">
+                                        <div class="form-check">
+                                            <input class="form-check-input project-checkbox" type="checkbox"
+                                                value="<?php echo $_smarty_tpl->tpl_vars['project']->value;?>
+"
+                                                id="project_<?php echo smarty_modifier_replace(smarty_modifier_replace(smarty_modifier_replace($_smarty_tpl->tpl_vars['project']->value,' ','_'),'-','_'),'.','_');?>
+"
+                                                name="projects[]"
+                                                <?php if ((isset($_smarty_tpl->tpl_vars['filters']->value['projects'])) && in_array($_smarty_tpl->tpl_vars['project']->value,$_smarty_tpl->tpl_vars['filters']->value['projects'])) {?>checked<?php }?>>
+                                            <label class="form-check-label <?php if ($_smarty_tpl->tpl_vars['project']->value == 'N/A') {?>na-label<?php }?>"
+                                                for="project_<?php echo smarty_modifier_replace(smarty_modifier_replace(smarty_modifier_replace($_smarty_tpl->tpl_vars['project']->value,' ','_'),'-','_'),'.','_');?>
+">
+                                                <?php echo $_smarty_tpl->tpl_vars['project']->value;?>
+
+                                            </label>
+                                        </div>
+                                    </div>
+                                <?php
+}
+$_smarty_tpl->smarty->ext->_foreach->restore($_smarty_tpl, 1);?>
+                            </div>
+                            <div class="filter-buttons">
+                                <button type="button" class="btn btn-sm" id="selectAllProjects">Select All</button>
+                                <button type="button" class="btn btn-sm" id="clearAllProjects">Clear All</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="filter-section">
+                        <div class="filter-title">ADDITIONAL DATA</div>
+                        <div class="filter-box">
+                            <div class="filter-options">
+                                <?php
+$_from = $_smarty_tpl->smarty->ext->_foreach->init($_smarty_tpl, $_smarty_tpl->tpl_vars['dataCategories']->value, 'category', false, 'categoryKey');
+$_smarty_tpl->tpl_vars['category']->do_else = true;
+if ($_from !== null) foreach ($_from as $_smarty_tpl->tpl_vars['categoryKey']->value => $_smarty_tpl->tpl_vars['category']->value) {
+$_smarty_tpl->tpl_vars['category']->do_else = false;
+?>
+                                    <div class="filter-option">
+                                        <div class="form-check">
+                                            <input class="form-check-input category-checkbox" type="checkbox"
+                                                value="<?php echo $_smarty_tpl->tpl_vars['categoryKey']->value;?>
+" id="category_<?php echo $_smarty_tpl->tpl_vars['categoryKey']->value;?>
+" name="data_categories[]"
+                                                <?php if ((isset($_smarty_tpl->tpl_vars['filters']->value['data_categories'])) && in_array($_smarty_tpl->tpl_vars['categoryKey']->value,$_smarty_tpl->tpl_vars['filters']->value['data_categories'])) {?>checked<?php }?>>
+                                            <label class="form-check-label" for="category_<?php echo $_smarty_tpl->tpl_vars['categoryKey']->value;?>
+">
+                                                <?php echo $_smarty_tpl->tpl_vars['category']->value['name'];?>
+
+                                                <?php if ((isset($_smarty_tpl->tpl_vars['category']->value['count']))) {?>
+                                                    <span class="category-count">(<?php echo $_smarty_tpl->tpl_vars['category']->value['count'];?>
+)</span>
+                                                <?php }?>
+                                            </label>
+                                        </div>
+                                    </div>
+                                <?php
+}
+$_smarty_tpl->smarty->ext->_foreach->restore($_smarty_tpl, 1);?>
+                            </div>
+                            <div class="filter-buttons">
+                                <button type="button" class="btn btn-sm" id="selectAllCategories">Select All</button>
+                                <button type="button" class="btn btn-sm" id="clearAllCategories">Clear All</button>
                             </div>
                         </div>
                     </div>
@@ -234,7 +321,10 @@ $_smarty_tpl->smarty->ext->_foreach->restore($_smarty_tpl, 1);?>
                                 <thead>
                                     <tr>
                                         <th>ID</th>
-                                        <th>Year</th>
+                                        <th>Date</th>
+                                        <th>Project</th>
+                                        <th>Code Field</th>
+                                        <th>Test site</th>
                                         <th>Spectra Device</th>
                                         <th>Crop</th>
                                         <th>Cultivar</th>
@@ -252,13 +342,19 @@ $_smarty_tpl->tpl_vars['row']->do_else = false;
                                         <tr>
                                             <td><?php echo $_smarty_tpl->tpl_vars['row']->value['ID'];?>
 </td>
-                                            <td><?php echo $_smarty_tpl->tpl_vars['row']->value['Year'];?>
+                                            <td><?php echo $_smarty_tpl->tpl_vars['row']->value['Date'];?>
+</td>
+                                            <td><?php echo $_smarty_tpl->tpl_vars['row']->value['Project'];?>
+</td>
+                                            <td><?php echo $_smarty_tpl->tpl_vars['row']->value['Code_field'];?>
+</td>
+                                            <td><?php echo $_smarty_tpl->tpl_vars['row']->value['Test_site'];?>
 </td>
                                             <td><?php echo $_smarty_tpl->tpl_vars['row']->value['Spectra_device'];?>
 </td>
                                             <td><?php echo $_smarty_tpl->tpl_vars['row']->value['Crop'];?>
 </td>
-                                            <td><?php echo $_smarty_tpl->tpl_vars['row']->value['Intensity'];?>
+                                            <td><?php echo $_smarty_tpl->tpl_vars['row']->value['Cultivar'];?>
 </td>
                                             <td><?php echo $_smarty_tpl->tpl_vars['row']->value['Morphology'];?>
 </td>
@@ -278,20 +374,7 @@ $_smarty_tpl->smarty->ext->_foreach->restore($_smarty_tpl, 1);?>
                                 </tbody>
                             </table>
 
-                                                        <nav aria-label="Data pagination">
-                                <ul class="pagination justify-content-center">
-                                    <li class="page-item disabled">
-                                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
-                                    </li>
-                                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                                    <li class="page-item"><a class="page-link" href="#">2</a></li>
-                                    <li class="page-item"><a class="page-link" href="#">3</a></li>
-                                    <li class="page-item">
-                                        <a class="page-link" href="#">Next</a>
-                                    </li>
-                                </ul>
-                            </nav>
-                        </div>
+                                                                                </div>
                     </div>
 
                                         <div class="tab-pane fade" id="metadata" role="tabpanel" aria-labelledby="metadata-tab">
