@@ -12,7 +12,10 @@ echo "<pre>$output</pre>";
  
 $output = shell_exec("git config --global --add safe.directory /var/www/html/omicbots/omicbots-db 2>&1");
 echo "<pre>$output</pre>";
- 
+
+$output = shell_exec('git reset --hard origin/main 2>&1');
+echo "<pre>$output</pre>";
+echo "done";
  
 // Executar o comando 'git pull'
 $output = shell_exec('git pull 2>&1');
