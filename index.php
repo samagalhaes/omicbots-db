@@ -104,7 +104,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $recordCount = count($data);
 $columnCount = $data ? count($data[0]) : 0;
 
-print_r($filters);
 $dataCategories = $dataManager->getAvailableDataCategories($filters);
 
 // Assign variables to Smarty

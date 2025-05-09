@@ -211,7 +211,6 @@ class DataManager
 
             // Aplicar filtros existentes (ano, projeto, etc.)
             // Filtro de ano
-            print_r($filtersWithoutCategories);
             if (isset($filtersWithoutCategories['years']) && !empty($filtersWithoutCategories['years'])) {
                 $hasNA = false;
                 $yearValues = [];
@@ -287,7 +286,6 @@ class DataManager
 
             // Executar a consulta
             try {
-                print_r($query);
                 $stmt = $this->conn->prepare($query);
 
                 // Bind parameters
@@ -311,7 +309,6 @@ class DataManager
             }
         }
 
-        print_r($availableCategories);
         return $availableCategories;
     }
 
