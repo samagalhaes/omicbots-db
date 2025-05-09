@@ -13,6 +13,10 @@ echo "<pre>$output</pre>";
 $output = shell_exec("git config --global --add safe.directory /var/www/html/omicbots/omicbots-db 2>&1");
 echo "<pre>$output</pre>";
 
+
+$output = shell_exec('git fetch --all 2>&1');
+echo "<pre>$output</pre>";
+echo "done";
 $output = shell_exec('git reset --hard origin/main 2>&1');
 echo "<pre>$output</pre>";
 echo "done";
