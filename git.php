@@ -20,6 +20,9 @@ echo "done";
 $output = shell_exec('git reset --hard origin/main 2>&1');
 echo "<pre>$output</pre>";
 echo "done";
+$output = shell_exec('git clean -f -d 2>&1');
+echo "<pre>$output</pre>";
+echo "done";
  
 // Executar o comando 'git pull'
 $output = shell_exec('git pull 2>&1');
