@@ -30,10 +30,7 @@
     },
     "scripts": {
         "pre-install-cmd": [
-            "echo 'Running pre-install commands...'",
-            "composer dump-autoload",
-            "composer update",
-            "php -m"
+            "echo 'Running pre-install commands...'"
         ],
         "post-install-cmd": [
             "echo 'Running post-install commands...'",
