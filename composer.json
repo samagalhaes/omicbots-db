@@ -14,7 +14,7 @@
         "smarty/smarty": "^4.3",
         "ext-pdo": "*",
         "ext-json": "*",
-        "ext-password": "*"
+        // "ext-password": "*"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5"
