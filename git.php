@@ -30,16 +30,6 @@ $output = shell_exec('git pull 2>&1');
 // Exibir a saída do comando
 echo "<pre>$output</pre>";
 echo "done";
-
-
-
-$output = shell_exec('phpenmod password 2>&1');
-echo "<pre>$output</pre>";
-echo "done";
-
-$output = shell_exec('systemctl restart apache2 2>&1');
-echo "<pre>$output</pre>";
-echo "done";
  
 // $output = shell_exec('ls -la /var/log/apache2/error.log 2>&1');
 // // Exibir a saída do comando
