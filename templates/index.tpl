@@ -13,8 +13,124 @@
 <body>
     <div class="container-fluid">
         <div class="row">
+
             {* Sidebar with Filters *}
             <div class="col-md-3 sidebar">
+                {* Authentication Section *}
+                {if ($logged_in == false) || !isset(logged_in)}
+                    <div class="login-section">
+                        <div class="card login-card">
+                            <div class="card-body">
+                                {* <ul class="nav nav-pills nav-fill auth-tabs mb-3" id="authTab" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link {if !$register_mode}active{/if}" id="login-tab"
+                                        data-bs-toggle="tab" data-bs-target="#login" type="button"
+                                        role="tab">Login</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link {if $register_mode}active{/if}" id="register-tab"
+                                        data-bs-toggle="tab" data-bs-target="#register" type="button"
+                                        role="tab">Register</button>
+                                </li>
+                            </ul> *}
+
+                                <div class="tab-content" id="authTabContent">
+                                    {* Login Tab *}
+                                    <div class="tab-pane fade {if !$register_mode}show active{/if}" id="login"
+                                        role="tabpanel">
+                                        {* <h3 class="mb-4">Welcome Back</h3> *}
+
+                                        {if $login_error}
+                                            <div class="alert alert-danger" role="alert">
+                                                {$login_error}
+                                            </div>
+                                        {/if}
+
+                                        <form method="post" action="index.php">
+                                            <input type="hidden" name="action" value="login">
+                                            <div class="mb-3">
+                                                <label for="login_username" class="form-label">Username or Email</label>
+                                                <input type="text" class="form-control" id="login_username" name="username"
+                                                    required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="login_password" class="form-label">Password</label>
+                                                <input type="password" class="form-control" id="login_password"
+                                                    name="password" required>
+                                            </div>
+                                            <div class="d-grid gap-2">
+                                                <button type="submit" class="btn btn-primary">Login</button>
+                                            </div>
+                                        </form>
+                                    </div>
+
+                                    {* Register Tab
+                                <div class="tab-pane fade {if $register_mode}show active{/if}" id="register"
+                                    role="tabpanel">
+                                    <h3 class="mb-4">Create Account</h3>
+
+                                    {if $register_error}
+                                        <div class="alert alert-danger" role="alert">
+                                            {$register_error}
+                                        </div>
+                                    {/if}
+
+                                    <form method="post" action="index.php">
+                                        <input type="hidden" name="action" value="register">
+                                        <div class="mb-3">
+                                            <label for="register_username" class="form-label">Username</label>
+                                            <input type="text" class="form-control" id="register_username"
+                                                name="username" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="register_email" class="form-label">Email</label>
+                                            <input type="email" class="form-control" id="register_email" name="email"
+                                                required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="register_password" class="form-label">Password</label>
+                                            <input type="password" class="form-control" id="register_password"
+                                                name="password" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="register_project" class="form-label">Project</label>
+                                            <select class="form-select" id="register_project" name="project" required>
+                                                <option value="">Select a Project</option>
+                                                {foreach from=$projects item=project}
+                                                    <option value="{$project}">{$project}</option>
+                                                {/foreach}
+                                            </select>
+                                        </div>
+                                        <div class="d-grid gap-2">
+                                            <button type="submit" class="btn btn-primary">Register</button>
+                                        </div>
+                                    </form>
+                                </div> *}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {/if}
+
+                {if $logged_in}
+                    <div class="user-info mb-3 d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>Welcome, {$user.username}</strong>
+                            {if $user.role == 'admin'}
+                                <span class="badge bg-success">Admin</span>
+                            {else}
+                                <span class="badge bg-primary">Project: {$user.project}</span>
+                            {/if}
+                        </div>
+                        <form method="post" action="index.php" class="d-inline">
+                            <input type="hidden" name="action" value="logout">
+                            <button type="submit" class="btn btn-outline-danger btn-sm">
+                                <i class="bi bi-box-arrow-right"></i> Logout
+                            </button>
+                        </form>
+                    </div>
+                {/if}
+
                 <h4 class="sidebar-header">FILTERS</h4>
 
                 <form method="post" action="index.php" id="filterForm">
@@ -176,7 +292,7 @@
             {* Main Content *}
             <div class="col-md-9 main-content">
                 <h2>{$smarty.const.APP_NAME}</h2>
-                <p>Access and download crop spectral data filtered by various parameters. Select your preferred filters
+                <p>Download crop spectral data filtered by various parameters. Select your preferred filters
                     on the left panel.</p>
 
                 {* Navigation Tabs *}
@@ -302,23 +418,38 @@
                                 <p>This dataset contains spectral measurements from various agricultural samples. The
                                     data includes:</p>
                                 <ul>
-                                    <li><strong>Spectra Device:</strong> The instrument used for spectral acquisition
-                                        (NIRS, FTIR, Raman, XRF)</li>
-                                    <li><strong>Crop Type:</strong> The agricultural crop being analyzed</li>
+                                    <li><strong>Date:</strong> The date of data collection (YYYY-MM-DD)</li>
+                                    <li><strong>Project:</strong> The research project associated with the data</li>
+                                    <li><strong>Test Site:</strong> The location where the data was collected</li>
+                                    <li><strong>Code Field:</strong> The unique identifier for the field sample</li>
+                                    <li><strong>Local:</strong> Wether the sample was acquired in the field or in the
+                                        lab</li>
+                                    <li><strong>Crop Type:</strong> The agricultural crop being analyzed (grapevine,
+                                        ...) </li>
                                     <li><strong>Cultivar:</strong> The specific variety of the crop</li>
-                                    <li><strong>Wavelength:</strong> The spectral wavelength in nm or cm<sup>-1</sup>
-                                        depending on the technique</li>
+                                    <li><strong>Morphology:</strong> The physical characteristics from where the sample
+                                        was acquired (canopy, leaf, fruit, ...)</li>
+                                    <li><strong>Spectra Device:</strong> The instrument used for spectral acquisition
+                                        (ASD, Libs, Metbots, ...)</li>
+                                    <li><strong>Wavelength:</strong> The spectral wavelength in nm</li>
                                     <li><strong>Intensity:</strong> The measured spectral intensity</li>
-                                    <li><strong>Morphology:</strong> The physical characteristics of the sample</li>
-                                    <li><strong>Local:</strong> The geographical location where the sample was collected
+                                    <li><strong>Laboratory measures:</strong> Laboratory ground-truth data of the
+                                        properties of the organs according with their topology (anthocyanin, carotenoid,
+                                        ROS, sugar, clorophyll, ...)</li>
+                                    <li><strong>Ecophysiology:</strong> </li>
+                                    <li><strong>XRF:</strong> </li>
+                                    <li><strong>Hormones:</strong> </li>
+                                    <li><strong>Genes:</strong> </li>
                                     </li>
                                 </ul>
-                                <h6>Data Collection Methods</h6>
+                                <h5>Data Collection Methods</h5>
                                 <p>All spectral measurements were performed according to standard protocols. Sample
                                     preparation followed ISO guidelines for agricultural products.</p>
-                                <h6>Citation</h6>
-                                <p>When using this data, please cite: Agricultural Research Institute (2023). Spectral
-                                    Database of Agricultural Crops.</p>
+                                <h5>Citation</h5>
+                                <p>When using this data, please cite: INESC TEC - Instituto de Engenharia de Sistemas e
+                                    Computadores Tecnologia e Ciência. 2025. "OMICSTAT".
+                                    https://criis-projects.inesctec.pt/Omicbots/index.php </p>
+                                <h5>License</h5>
                             </div>
                         </div>
                     </div>
@@ -342,10 +473,13 @@
                                         used.</li>
                                     <li><strong>Years:</strong> Select specific years of data collection.</li>
                                     <li><strong>Crop Type:</strong> Filter by the agricultural crop.</li>
+                                    <li><strong>Project:</strong> Filter by the project the data belongs.</li>
+                                    <li><strong>Additional Data:</strong> Select the ground-truth data acquired at
+                                        laboratory for download.
                                 </ul>
                                 <h6>Contact Support</h6>
-                                <p>If you need assistance or have questions about the data, please contact <a
-                                        href="mailto:support@agrispectra.org">support@agrispectra.org</a>.</p>
+                                <p>If you need assistance or have questions about the data, please contact Renan Tosin
+                                    at <a href="mailto:renan.tosin@inesctec.pt">renan.tosin@inesctec.pt</a>.</p>
                             </div>
                         </div>
                     </div>
