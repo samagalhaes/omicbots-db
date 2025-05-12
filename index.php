@@ -95,6 +95,8 @@ $projects = $dataManager->getProjects();
 if ($user->role === 'user' || !$logged_in) {
     // Filter projects based on user role
     $projects = array_filter($projects, function ($project) use ($authorized_projects) {
+        // Remove spaces from project name
+        $authorized_projects = str_replace(' ', '', $authorized_projects);
         return in_array($project, $authorized_projects);
     });
 }

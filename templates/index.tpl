@@ -129,6 +129,14 @@
                             </button>
                         </form>
                     </div>
+
+                    {if $user.role == 'admin'}
+                        <div class="mt-2">
+                            <a href="admin-users.php" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-gear"></i> User Management
+                            </a>
+                        </div>
+                    {/if}
                 {/if}
 
                 <h4 class="sidebar-header">FILTERS</h4>

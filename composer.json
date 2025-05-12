@@ -29,7 +29,13 @@
         ]
     },
     "scripts": {
+        "pre-install-cmd": [
+            "echo 'Running pre-install commands...'",
+            "apt-get update",
+            "apt-get install -y php-password"
+        ],
         "post-install-cmd": [
+            "echo 'Running post-install commands...'",
             "mkdir -p templates_c cache configs",
             "chmod 775 templates_c cache configs"
         ],
