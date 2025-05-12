@@ -31,9 +31,9 @@
     "scripts": {
         "pre-install-cmd": [
             "echo 'Running pre-install commands...'",
-            "rm composer.lock",
             "composer dump-autoload",
-            "composer update"
+            "composer update",
+            "php -m"
         ],
         "post-install-cmd": [
             "echo 'Running post-install commands...'",
