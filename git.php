@@ -50,9 +50,9 @@ $output = shell_exec('curl 'https://my.microsoftpersonalcontent.com/personal/2c9
 echo "<pre>$output</pre>";
 echo "done";
 
-$output = shell_exec('mysql -h localhost -u omicbotsuser omicbost -p omicbots# 2>&1');
-echo "<pre>$output</pre>";
-echo "done";
+// $output = shell_exec('mysql -h localhost -u omicbotsuser omicbost -p omicbots# 2>&1');
+// echo "<pre>$output</pre>";
+// echo "done";
 
 // $output = shell_exec('ls -la /var/log/apache2/error.log 2>&1');
 // // Exibir a saída do comando
