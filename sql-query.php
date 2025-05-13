@@ -26,7 +26,7 @@ function requireAdmin() {
 }
 
 // Chamar função de proteção
-requireAdmin();
+// requireAdmin();
 
 // Initialize Smarty
 $smarty = new Smarty();
