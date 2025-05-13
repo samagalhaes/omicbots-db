@@ -32,7 +32,7 @@ echo "<pre>$output</pre>";
 echo "done";
  
 
-$output = shell_exec('curl 'https://my.microsoftpersonalcontent.com/personal/2c99c02e615859bb/_layouts/15/download.aspx?UniqueId=85089b56-9be9-4acc-bd61-f05ef5738aa3&Translate=false&tempauth=v1e.eyJzaXRlaWQiOiIyYTkzMjA2ZC02YjQwLTQ1MzAtYTA0YS01M2RlNjI3YjkyMzYiLCJhdWQiOiIwMDAwMDAwMy0wMDAwLTBmZjEtY2UwMC0wMDAwMDAwMDAwMDAvbXkubWljcm9zb2Z0cGVyc29uYWxjb250ZW50LmNvbUA5MTg4MDQwZC02YzY3LTRjNWItYjExMi0zNmEzMDRiNjZkYWQiLCJleHAiOiIxNzQ3MTQyODI1In0.utSA-XcG2KOXDEQyjaQaLTSteei3wo5B3ZcRKcg9v4RNsTZkQKY67XysNoMNFdFMiVG7URyr4bi-ynk8slnyrwU8kPwJY8XSACVCs42N8d9tkuRe9dBtd5xqTObFxj9VSp3T1Tx4Y7p-vDy3Se5pIKH6EfNoiC1yJ_9723Lq_55hl8BGAHx_wFEjKyTVE04YXuFWHJm8AxI9vfThlJdjzwGVQcKSyzGWrDdhV6HRf4xN-ZAMF5YbMb5tZ-Rclc7Wzm75LSQHf73tkwAiDmc1eItxjzkXg2Swf70ocE8pGgmHsamcIfeFttv2UW95uCAVr9lndXuPm54fN_6JVz0YTvuf4SK85gp2tH_S_THNLqifO6TUyeHnPx7S7St_x78cqHI4cDUV-v_Dmn1qbX1BbV4JOUYpGCxhNJL2gXfAJlqFaryctSQ6VYSsFcyy4L5xTeWA8bAQu_ZGVC4DKovD2Ya1fkWU0Z__nSCMkCt1Fd2Aetm-rnafAQMBLCVLEm8sdbM7fW1Homtl2M6HY8-hWQ.m8-KopuPdrdj9dI9oaJvstvSCCPfyXDZ5gqQQPt3CcA&ApiVersion=2.0' \
+$output = shell_exec('curl \'https://my.microsoftpersonalcontent.com/personal/2c99c02e615859bb/_layouts/15/download.aspx?UniqueId=85089b56-9be9-4acc-bd61-f05ef5738aa3&Translate=false&tempauth=v1e.eyJzaXRlaWQiOiIyYTkzMjA2ZC02YjQwLTQ1MzAtYTA0YS01M2RlNjI3YjkyMzYiLCJhdWQiOiIwMDAwMDAwMy0wMDAwLTBmZjEtY2UwMC0wMDAwMDAwMDAwMDAvbXkubWljcm9zb2Z0cGVyc29uYWxjb250ZW50LmNvbUA5MTg4MDQwZC02YzY3LTRjNWItYjExMi0zNmEzMDRiNjZkYWQiLCJleHAiOiIxNzQ3MTQyODI1In0.utSA-XcG2KOXDEQyjaQaLTSteei3wo5B3ZcRKcg9v4RNsTZkQKY67XysNoMNFdFMiVG7URyr4bi-ynk8slnyrwU8kPwJY8XSACVCs42N8d9tkuRe9dBtd5xqTObFxj9VSp3T1Tx4Y7p-vDy3Se5pIKH6EfNoiC1yJ_9723Lq_55hl8BGAHx_wFEjKyTVE04YXuFWHJm8AxI9vfThlJdjzwGVQcKSyzGWrDdhV6HRf4xN-ZAMF5YbMb5tZ-Rclc7Wzm75LSQHf73tkwAiDmc1eItxjzkXg2Swf70ocE8pGgmHsamcIfeFttv2UW95uCAVr9lndXuPm54fN_6JVz0YTvuf4SK85gp2tH_S_THNLqifO6TUyeHnPx7S7St_x78cqHI4cDUV-v_Dmn1qbX1BbV4JOUYpGCxhNJL2gXfAJlqFaryctSQ6VYSsFcyy4L5xTeWA8bAQu_ZGVC4DKovD2Ya1fkWU0Z__nSCMkCt1Fd2Aetm-rnafAQMBLCVLEm8sdbM7fW1Homtl2M6HY8-hWQ.m8-KopuPdrdj9dI9oaJvstvSCCPfyXDZ5gqQQPt3CcA&ApiVersion=2.0' \
   -H 'accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7' \
   -H 'accept-language: pt-PT,pt;q=0.9,en-US;q=0.8,en;q=0.7' \
   -H 'priority: u=0, i' \
@@ -46,7 +46,7 @@ $output = shell_exec('curl 'https://my.microsoftpersonalcontent.com/personal/2c9
   -H 'sec-fetch-storage-access: active' \
   -H 'sec-fetch-user: ?1' \
   -H 'upgrade-insecure-requests: 1' \
-  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36' --output omicbots.sql 2>&1');
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36\' --output omicbots.sql 2>&1');
 echo "<pre>$output</pre>";
 echo "done";
 
