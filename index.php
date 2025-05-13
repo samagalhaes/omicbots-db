@@ -159,8 +159,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        // Generate and download the file
-        $dataManager->downloadData($filters, $downloadFormat);
+        // // Generate and download the file
+        // $dataManager->downloadData($filters, $downloadFormat);
+        
+        // Verificar o tamanho total dos dados
+        $totalRecords = $dataManager->countTotalRecordsForDownload($filters);
+
+        // Definir chunk size com base no tamanho total dos dados
+        $chunkSize = 50000; // Ajuste conforme necessário
+
+        // Adicionar opção de download de grandes volumes
+        try {
+            $dataManager->downloadLargeData($filters, $downloadFormat, $chunkSize);
+        } catch (Exception $e) {
+            // Lidar com erro de download
+            $error = "Erro no download: " . $e->getMessage();
+            // Redirecionar com mensagem de erro
+            $_SESSION['download_error'] = $error;
+        }
+        
         ob_end_clean();
         exit; // Stop execution after download
     } else {
@@ -186,7 +203,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // Get filtered data
-        $data = $dataManager->getData($filters);
+        $data = $dataManager->getData($filters,100);
     }
 } else {
     // Default: get limited preview data with default filter
@@ -198,6 +215,9 @@ $recordCount = count($data);
 $columnCount = $data ? count($data[0]) : 0;
 
 $dataCategories = $dataManager->getAvailableDataCategories($filters);
+
+ // Atribuir variáveis ao template
+ $smarty->assign('dataManager', $dataManager);
 
 // Assign variables to Smarty
 $smarty->assign('spectraDevices', $spectraDevices);

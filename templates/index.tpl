@@ -338,11 +338,30 @@
                                                         <option value="json">JSON</option>
                                                     </select>
                                                 </div>
+
+                                                {* Adicionar informação de volume de dados *}
+                                                {assign var="total_records" value=$dataManager->countTotalRecordsForDownload($filters)}
+
+                                                <div class="alert alert-info">
+                                                    <strong>Total Records:</strong>
+                                                    {$total_records|number_format:0:',':'.'}
+                                                    {if $total_records > 100000}
+                                                        <p class="small text-muted mt-2">
+                                                            <i class="bi bi-info-circle"></i> Large dataset detected.
+                                                            Download may take some time.
+                                                        </p>
+                                                    {/if}
+                                                </div>
+
                                                 <input type="hidden" name="download" value="true">
                                                 {* Copy filter values from the filter form *}
                                                 <div id="hiddenFilterValues"></div>
                                                 <div class="d-grid gap-2">
-                                                    <button class="btn btn-download" type="submit">Download</button>
+                                                    <button class="btn btn-download" type="submit"
+                                                        {if $total_records > 500000}onclick="return confirm('You are downloading a very large dataset. This may take several minutes. Continue?')"
+                                                        {/if}>
+                                                        Download
+                                                    </button>
                                                 </div>
                                             </form>
                                         </div>

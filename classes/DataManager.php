@@ -348,6 +348,7 @@ class DataManager
      */
     public function getData($filters = [], $limit = 0, $offset = 0)
     {
+        gc_enable();
 
         // Determinar as wavelengths a serem usadas
         $spectraDevice = isset($filters['spectra_device']) ? $filters['spectra_device'] : null;
@@ -445,8 +446,8 @@ class DataManager
                         $columnName = "" . str_replace('=', '_', $columnName);
                         $columnName = "" . str_replace('-1', '_', $columnName);
                         $columnName = "" . str_replace('\'', '_', $columnName);
-                        $pivotColumns[] = "MAX(CASE WHEN xrf.Molecule = " . $this->conn->quote($measure) . " THEN xrf.Value ELSE NULL END) AS " . $columnName . "_" . 
-                                          ", MAX(CASE WHEN xrf.Molecule = " . $this->conn->quote($measure) . " THEN xrf.Error ELSE NULL END) AS " . $columnName . "_Error";
+                        $pivotColumns[] = "MAX(CASE WHEN xrf.Molecule = " . $this->conn->quote($measure) . " THEN xrf.Value ELSE NULL END) AS " . $columnName . "_" .
+                            ", MAX(CASE WHEN xrf.Molecule = " . $this->conn->quote($measure) . " THEN xrf.Error ELSE NULL END) AS " . $columnName . "_Error";
                     }
                     // Adicionar as colunas pivot à consulta
                     $query .= implode(",\n                ", $pivotColumns);
@@ -464,8 +465,8 @@ class DataManager
                         $columnName = "" . str_replace('=', '_', $columnName);
                         $columnName = "" . str_replace('-1', '_', $columnName);
                         $columnName = "" . str_replace('\'', '_', $columnName);
-                        $pivotColumns[] = "MAX(CASE WHEN hormones.Parameter = " . $this->conn->quote($measure) . " THEN hormones.Value ELSE NULL END) AS " . $columnName . 
-                                          ", MAX(CASE WHEN hormones.Parameter = " . $this->conn->quote($measure) . " THEN hormones.Laboratory ELSE NULL END) AS " . $columnName . "_Laboratory";
+                        $pivotColumns[] = "MAX(CASE WHEN hormones.Parameter = " . $this->conn->quote($measure) . " THEN hormones.Value ELSE NULL END) AS " . $columnName .
+                            ", MAX(CASE WHEN hormones.Parameter = " . $this->conn->quote($measure) . " THEN hormones.Laboratory ELSE NULL END) AS " . $columnName . "_Laboratory";
                     }
                     // Adicionar as colunas pivot à consulta
                     $query .= implode(",\n                ", $pivotColumns);
@@ -483,8 +484,8 @@ class DataManager
                         $columnName = "" . str_replace('=', '_', $columnName);
                         $columnName = "" . str_replace('-1', '_', $columnName);
                         $columnName = "" . str_replace('\'', '_', $columnName);
-                        $pivotColumns[] = "MAX(CASE WHEN genes.Parameter = " . $this->conn->quote($measure) . " THEN genes.Value ELSE NULL END) AS " . $columnName . 
-                                          ", MAX(CASE WHEN genes.Parameter = " . $this->conn->quote($measure) . " THEN genes.Laboratory ELSE NULL END) AS " . $columnName . "_Laboratory";
+                        $pivotColumns[] = "MAX(CASE WHEN genes.Parameter = " . $this->conn->quote($measure) . " THEN genes.Value ELSE NULL END) AS " . $columnName .
+                            ", MAX(CASE WHEN genes.Parameter = " . $this->conn->quote($measure) . " THEN genes.Laboratory ELSE NULL END) AS " . $columnName . "_Laboratory";
                     }
                     // Adicionar as colunas pivot à consulta
                     $query .= implode(",\n                ", $pivotColumns);
@@ -512,7 +513,7 @@ class DataManager
 
         if (isset($filters['data_categories']) && !empty($filters['data_categories'])) {
             foreach ($filters['data_categories'] as $category) {
-            $query .= "
+                $query .= "
                 LEFT JOIN $category ON c.ID = $category.ID";
             }
         }
@@ -695,6 +696,9 @@ class DataManager
 
             $stmt->execute();
             $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // Liberar memória
+            gc_collect_cycles();
 
             // Se for formato pivotado, adicionar metadados
             if ($pivotWavelengths) {
@@ -1012,6 +1016,304 @@ class DataManager
             if ($offset > 0) {
                 $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
             }
+        }
+    }
+
+    /**
+     * Gerar e fazer download de dados em grande volume
+     * @param array $filters Filtros para seleção de dados
+     * @param string $format Formato de download (csv, excel, json)
+     * @param int $chunk_size Tamanho do chunk para processamento
+     */
+    public function downloadLargeData($filters = [], $format = 'csv', $chunk_size = 10000)
+    {
+        // Desabilitar limite de tempo de execução
+        set_time_limit(0);
+
+        // Desabilitar buffer de saída
+        if (ob_get_level()) {
+            ob_end_clean();
+        }
+
+        // Preparar cabeçalhos para download
+        switch ($format) {
+            case 'excel':
+                header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                header('Content-Disposition: attachment; filename="agricultural_data_large.xlsx"');
+                $this->streamExcelLargeData($filters, $chunk_size);
+                break;
+
+            case 'json':
+                header('Content-Type: application/json');
+                header('Content-Disposition: attachment; filename="agricultural_data_large.json"');
+                $this->streamJSONLargeData($filters, $chunk_size);
+                break;
+
+            case 'csv':
+            default:
+                header('Content-Type: text/csv');
+                header('Content-Disposition: attachment; filename="agricultural_data_large.csv"');
+                header('Cache-Control: no-cache');
+                header('Pragma: no-cache');
+                $this->streamCSVLargeData($filters, $chunk_size);
+                break;
+        }
+
+        // Parar execução após download
+        exit();
+    }
+
+    /**
+     * Transmitir dados em CSV em grandes volumes
+     * @param array $filters Filtros para seleção de dados
+     * @param int $chunk_size Tamanho do chunk para processamento
+     */
+    private function streamCSVLargeData($filters, $chunk_size = 10000)
+    {
+        // Abrir saída padrão
+        $output = fopen('php://output', 'w');
+
+        // Configurações de memória
+        $offset = 0;
+        $first_chunk = true;
+
+        try {
+            while (true) {
+                // Buscar dados em chunks
+                $data = $this->getData(array_merge($filters, [
+                    'limit' => $chunk_size,
+                    'offset' => $offset
+                ]));
+
+                // Parar se não houver mais dados
+                if (empty($data)) {
+                    break;
+                }
+
+                // Escrever cabeçalhos apenas na primeira iteração
+                if ($first_chunk) {
+                    // Escrever cabeçalhos
+                    fputcsv($output, array_keys($data[0]));
+                    $first_chunk = false;
+                }
+
+                // Escrever linhas de dados
+                foreach ($data as $row) {
+                    fputcsv($output, $row);
+                }
+
+                // Liberar memória
+                unset($data);
+
+                // Incrementar offset
+                $offset += $chunk_size;
+
+                // Forçar descarga do buffer
+                flush();
+            }
+        } catch (Exception $e) {
+            // Log de erro
+            error_log("Erro no download de dados: " . $e->getMessage());
+        } finally {
+            // Fechar arquivo
+            fclose($output);
+        }
+    }
+
+    /**
+     * Transmitir dados em JSON em grandes volumes
+     * @param array $filters Filtros para seleção de dados
+     * @param int $chunk_size Tamanho do chunk para processamento
+     */
+    private function streamJSONLargeData($filters, $chunk_size = 10000)
+    {
+        // Escrever início do JSON
+        echo "[";
+        $first_chunk = true;
+        $offset = 0;
+
+        try {
+            while (true) {
+                // Buscar dados em chunks
+                $data = $this->getData(array_merge($filters, [
+                    'limit' => $chunk_size,
+                    'offset' => $offset
+                ]));
+
+                // Parar se não houver mais dados
+                if (empty($data)) {
+                    break;
+                }
+
+                // Adicionar separador entre chunks
+                if (!$first_chunk) {
+                    echo ",";
+                }
+                $first_chunk = false;
+
+                // Escrever dados em JSON
+                echo json_encode($data, JSON_PARTIAL_OUTPUT_ON_ERROR);
+
+                // Liberar memória
+                unset($data);
+
+                // Incrementar offset
+                $offset += $chunk_size;
+
+                // Forçar descarga do buffer
+                flush();
+            }
+        } catch (Exception $e) {
+            // Log de erro
+            error_log("Erro no download de dados JSON: " . $e->getMessage());
+        } finally {
+            // Fechar JSON
+            echo "]";
+        }
+    }
+
+    /**
+     * Transmitir dados em Excel em grandes volumes
+     * @param array $filters Filtros para seleção de dados
+     * @param int $chunk_size Tamanho do chunk para processamento
+     */
+    private function streamExcelLargeData($filters, $chunk_size = 10000)
+    {
+        // Verificar se a biblioteca PhpSpreadsheet está disponível
+        if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
+            throw new Exception('PhpSpreadsheet library not installed');
+        }
+
+        // Criar planilha
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Configurações de memória
+        $offset = 0;
+        $row = 1;
+
+        try {
+            while (true) {
+                // Buscar dados em chunks
+                $data = $this->getData(array_merge($filters, [
+                    'limit' => $chunk_size,
+                    'offset' => $offset
+                ]));
+
+                // Parar se não houver mais dados
+                if (empty($data)) {
+                    break;
+                }
+
+                // Adicionar cabeçalhos na primeira iteração
+                if ($offset === 0) {
+                    // Adicionar cabeçalhos
+                    $col = 1;
+                    foreach (array_keys($data[0]) as $header) {
+                        $sheet->setCellValueByColumnAndRow($col++, $row, $header);
+                    }
+                    $row++;
+                }
+
+                // Adicionar dados
+                foreach ($data as $record) {
+                    $col = 1;
+                    foreach ($record as $value) {
+                        $sheet->setCellValueByColumnAndRow($col++, $row, $value);
+                    }
+                    $row++;
+                }
+
+                // Liberar memória
+                unset($data);
+
+                // Incrementar offset
+                $offset += $chunk_size;
+            }
+
+            // Criar writer para saída direta
+            $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xlsx');
+            $writer->save('php://output');
+        } catch (Exception $e) {
+            // Log de erro
+            error_log("Erro no download de dados Excel: " . $e->getMessage());
+        } finally {
+            // Limpar memória
+            $spreadsheet->disconnectWorksheets();
+            unset($spreadsheet);
+        }
+    }
+
+    /**
+     * Contar total de registros para download
+     * @param array $filters Filtros para contagem
+     * @return int Número total de registros
+     */
+    public function countTotalRecordsForDownload($filters = [])
+    {
+        $query = "
+            SELECT COUNT(DISTINCT c.ID) as total_records
+            FROM cropid c
+            JOIN spectra s ON s.ID = c.ID
+        ";
+
+        // Adicionar filtros
+        $whereConditions = [];
+        $params = [];
+
+        // Filtro de dispositivo espectral
+        if (isset($filters['spectra_device']) && !empty($filters['spectra_device'])) {
+            $whereConditions[] = "s.Spectra_device = ?";
+            $params[] = $filters['spectra_device'];
+        }
+
+        // Filtros de ano
+        if (isset($filters['years']) && !empty($filters['years'])) {
+            $yearConditions = [];
+            foreach ($filters['years'] as $year) {
+                if ($year == 0) {
+                    $yearConditions[] = "c.Date IS NULL OR YEAR(c.Date) = 0";
+                } else {
+                    $yearConditions[] = "YEAR(c.Date) = ?";
+                    $params[] = $year;
+                }
+            }
+            $whereConditions[] = "(" . implode(" OR ", $yearConditions) . ")";
+        }
+
+        // Filtros de tipo de cultura
+        if (isset($filters['crop_types']) && !empty($filters['crop_types'])) {
+            $whereConditions[] = "c.Crop IN (" . implode(',', array_fill(0, count($filters['crop_types']), '?')) . ")";
+            $params = array_merge($params, $filters['crop_types']);
+        }
+
+        // Filtros de projeto
+        if (isset($filters['projects']) && !empty($filters['projects'])) {
+            $projectConditions = [];
+            foreach ($filters['projects'] as $project) {
+                if ($project === 'N/A') {
+                    $projectConditions[] = "c.Project IS NULL OR TRIM(c.Project) = ''";
+                } else {
+                    $projectConditions[] = "c.Project = ?";
+                    $params[] = $project;
+                }
+            }
+            $whereConditions[] = "(" . implode(" OR ", $projectConditions) . ")";
+        }
+
+        // Adicionar condições WHERE
+        if (!empty($whereConditions)) {
+            $query .= " WHERE " . implode(" AND ", $whereConditions);
+        }
+
+        try {
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute($params);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $result ? $result['total_records'] : 0;
+        } catch (PDOException $e) {
+            error_log("Erro ao contar registros: " . $e->getMessage());
+            return 0;
         }
     }
 }
