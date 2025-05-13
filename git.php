@@ -50,6 +50,10 @@ echo "done";
 // echo "<pre>$output</pre>";
 // echo "done";
 
+$output = shell_exec('ls -la 2>&1');
+echo "<pre>$output</pre>";
+echo "done";
+
 $output = shell_exec('mysql --user=omicbotsuser --password=omicbots# omicbostdb < omicbots.sql 2>&1');
 echo "<pre>$output</pre>";
 echo "done";
