@@ -50,7 +50,7 @@ echo "done";
 // echo "<pre>$output</pre>";
 // echo "done";
 
-$output = shell_exec('mysql -h localhost -u omicbotsuser -p omicbots# omicbostdb 2>&1');
+$output = shell_exec('mysql --user=omicbotsuser --password=omicbots# omicbostdb < omicbots_16_12_2024.sql 2>&1');
 echo "<pre>$output</pre>";
 echo "done";
 
