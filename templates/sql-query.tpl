@@ -197,16 +197,16 @@
             });
 
             // Validação de formulário
-            document.getElementById('sqlQueryForm').addEventListener('submit', function(e) {
-                const query = editor.getValue().trim();
-                const allowedQueryTypes = ['SELECT', 'SHOW', 'DESCRIBE', 'EXPLAIN'];
-                const firstWord = query.split(/\s+/)[0].toUpperCase();
+            // document.getElementById('sqlQueryForm').addEventListener('submit', function(e) {
+            //     const query = editor.getValue().trim();
+            //     const allowedQueryTypes = ['SELECT', 'SHOW', 'DESCRIBE', 'EXPLAIN'];
+            //     const firstWord = query.split(/\s+/)[0].toUpperCase();
 
-                if (!allowedQueryTypes.includes(firstWord)) {
-                    e.preventDefault();
-                    alert('Only SELECT, SHOW, DESCRIBE, and EXPLAIN queries are allowed.');
-                }
-            });
+            //     if (!allowedQueryTypes.includes(firstWord)) {
+            //         e.preventDefault();
+            //         alert('Only SELECT, SHOW, DESCRIBE, and EXPLAIN queries are allowed.');
+            //     }
+            // });
         });
     </script>
 </body>
