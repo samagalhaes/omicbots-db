@@ -93,12 +93,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sql_query'])) {
         // Obter número de linhas afetadas
         $affected_rows = $stmt->rowCount();
 
+        
         // Verificar se é uma consulta SELECT
-        if (stripos($upper_query, 'SELECT') === 0) {
+        //if (stripos($upper_query, 'SELECT') === 0) {
             // Buscar resultados
             $sql_result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            print_r($sql_result);
-        }
+        //}
+        print_r($sql_result);
 
     } catch (PDOException $e) {
         // Registrar log de erro
