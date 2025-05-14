@@ -97,6 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sql_query'])) {
         if (stripos($upper_query, 'SELECT') === 0) {
             // Buscar resultados
             $sql_result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            print_r($sql_result);
         }
 
     } catch (PDOException $e) {

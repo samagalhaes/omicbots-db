@@ -119,6 +119,8 @@
                         <div class="card-header">
                             Query Results
                         </div>
+                        div ">
+                            {$sql_result}
                         <div class="card-body result-table">
                             <div class="table-responsive">
                                 <table class="table table-striped table-bordered">

@@ -84,7 +84,7 @@ if (isset($_SESSION['user_id'])) {
 }
 
 $authorized_projects = explode(',', $user->project);
-$authorized_projects[] = "Omicbots";
+// $authorized_projects[] = "Omicbots";
 
 // Get filter options for different categories
 $spectraDevices = $dataManager->getSpectraDevices();
