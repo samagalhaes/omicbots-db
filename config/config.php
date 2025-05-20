@@ -1,6 +1,6 @@
 <?php
 // Database configuration
-define('DB_HOST', 'localhost');
+define('DB_HOST', 'mysql');
 define('DB_NAME', 'omicbostdb');
 define('DB_USER', 'omicbotsuser');
 define('DB_PASS', 'omicbots#');

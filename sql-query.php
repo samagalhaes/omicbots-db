@@ -10,8 +10,6 @@ require_once 'config/config.php';
 require_once 'classes/Database.php';
 require_once 'classes/User.php';
 
-
-
 // Função para proteção de rota de admin
 function requireAdmin() {
     if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'admin') {
